@@ -31,20 +31,13 @@ constructor(address _BEP20Address)   {
     BEP20Address = IBEP20(_BEP20Address);              
     }
 
-  //  modifier onlyOwner(){                       // modifier function used here
-   //     require(msg.sender == owner ,"you can't unlock now");
-   //     _;
-   // }         // modifier is used, to be only called by msg.sender of the contract  
+ 
 
 /* when tge() will be called , then only _private(), _public(), team() etc, will be called.
 * After calling tge() , we will add token to IDO contract for transfering of token
 
 * Here TGE is initial time permanently set for individual item
  */
-
- function balance_of_Main_contract() external view onlyOwner returns(uint){
-     return address(this).balance;
- }
 
 function Token_Generation_Event() public onlyOwner {
     _TimeLockforPrivate = block.timestamp; 
