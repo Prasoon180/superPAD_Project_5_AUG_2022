@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.15;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract BEP20 is ERC20, Ownable,ERC20Burnable {
+    mapping(address => mapping(address => uint256)) public _allowances;
+    
+constructor() ERC20("BEP20", "SPAD") {}
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        require(to != address(this));
+        _mint(to, amount);
+    }
+  
+    /**
+    *@dev saveApprove to fix the approve race condition
+    @param spender The address which will spend the funds.
+    @param _currentAmount The actual amount of tokens that the spender can spend.
+    @param amount The amount of tokens to be spent.
+    *
+    *This is not a simple and most important, a backwards compatible way to fix
+    *The race condition issue on the approve function.There is large and unfinished
+    *discussion on the community https://github.com/ethereum/EIP/issues/738
+    *about this issue and the "best" approach is add a safeApprove function to
+    *validate the amount/value and leave the approve function as is to comply with
+    *the BEP20 standard
+    *
+    */
+     
+     function safeApprove(address spender, uint256 _currentAmount, uint256 amount) external  
+     returns(bool success) {
+        if(_allowances[msg.sender][spender] == _currentAmount){
+            return approve(spender, amount);
+        }
+        return false;
+    }
+    }
