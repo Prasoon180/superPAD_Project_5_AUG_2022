@@ -1,5 +1,5 @@
 //SPDX-License-Identifier:GPL-3.0
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.16;
 import "github.com/Prasoon180/superPAD_Project_5_AUG_2022/blob/main/IBEP20";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -18,7 +18,7 @@ uint public _MonthsforLiquidity;
 uint public _TimeLockforPrivate;
 uint public _TimeLockforPublic;
 uint public _TimeLockforReserve;
-uint public _TimeLockforReward;             // define variable of TGE of individual item
+uint public _TimeLockforReward;             // define variable of Timelock of individual item
 uint public _TimeLockforTeam;
 uint public  _TimeLockforLiquidity;
 uint public _TimeLockforMarket;
@@ -28,26 +28,21 @@ uint public _TimeLockforMarket;
 BEP20 address put in IDO contract in Constructor */
 
 constructor(address _BEP20Address)   {
-    BEP20Address = IBEP20(_BEP20Address);              
-    }
-
- 
-
-/* when tge() will be called , then only _private(), _public(), team() etc, will be called.
-* After calling tge() , we will add token to IDO contract for transfering of token
-
-* Here TGE is initial time permanently set for individual item
- */
-
-function Token_Generation_Event() public onlyOwner {
-    _TimeLockforPrivate = block.timestamp; 
+    BEP20Address = IBEP20(_BEP20Address); 
+     _TimeLockforPrivate = block.timestamp; 
     _TimeLockforPublic = block.timestamp;
     _TimeLockforReward = block.timestamp; 
     _TimeLockforReserve = block.timestamp + 31104000 seconds;   // 12 months = 31104000 seconds
     _TimeLockforTeam = block.timestamp + 31104000 seconds;       // 12 months = 31104000 seconds
     _TimeLockforLiquidity = block.timestamp;
-    _TimeLockforMarket = block.timestamp;  
-}
+    _TimeLockforMarket = block.timestamp;               
+    }
+
+/*
+ Here Timelock is initial time set for individual item
+ */
+
+
 
 /*  function define for private
 * 9 months equal weekly unlocking starting at TGE ---Token Distribution
@@ -60,7 +55,7 @@ function _private(address to , uint _amount) external onlyOwner {
     require(block.timestamp > _TimeLockforPrivate, "1 WEEK NOT OVER");
      BEP20Address.transfer( to, _amount);                           
      _WeeksforPrivate ++;
-    _TimeLockforPrivate += 604800 seconds;
+    _TimeLockforPrivate += 604800 seconds;       
     
 }
 
