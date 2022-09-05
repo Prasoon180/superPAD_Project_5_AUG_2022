@@ -1,0 +1,114 @@
+//SPDX-License-Identifier:GPL-3.0
+pragma solidity ^0.8.16;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "github.com/Prasoon180/superPAD_15Aug/blob/main/IBEP20.sol";
+
+contract stakingContract is  Ownable  {
+
+IBEP20 public BEP20Address;
+
+ constructor(address _BEP20Address)   {
+    BEP20Address = IBEP20(_BEP20Address); 
+ }
+
+  /**
+     * @notice We usually require to know who are all the stakeholders.
+     */
+    address[] internal stakeholders;
+
+    /**
+     * @notice The stakes for each stakeholder.
+     */ 
+      mapping(address => uint256) internal stakes;
+
+      
+
+       // ---------- STAKES ----------
+
+    /**
+     * @notice A method for a stakeholder to create a stake.
+     * @param _stake The size of the stake to be created.
+     * transferFrom - first use allowance , then use approve ,after this transferFrom will work
+     * increase/decrease allowance - it is used to increase/decrease allowance
+     */
+    function createStake(address from , address to  ,uint256 _stake)
+        public
+    {
+        require(from == msg.sender, "You cannot stake");
+        require(to == address(this), "please provide correct contract Address");
+        if(stakes[msg.sender] == 0) addStakeholder(msg.sender);
+        stakes[msg.sender] = stakes[msg.sender] + (_stake);
+        BEP20Address.transferFrom(from , to , _stake);
+        
+    }
+
+    /**
+     * @notice A method for a stakeholder to Unstake.
+     * @param _Unstake The size of the stake to be removed.
+     */
+    
+    function Unstake(address to  ,uint256 _Unstake)
+        public
+    {
+        require(to == msg.sender, "You cannot Unstake");
+        if(stakes[msg.sender] == 0) removeStakeholder(msg.sender);
+        stakes[msg.sender] = stakes[msg.sender] - (_Unstake);
+        BEP20Address.transfer( to , _Unstake);
+        
+    }
+
+      /**
+     * @notice A method to add a stakeholder.
+     * @param _stakeholder The stakeholder to add.
+     */
+    function addStakeholder(address _stakeholder)
+        public
+    {
+        (bool _isStakeholder, ) = isStakeholder(_stakeholder);
+        if(!_isStakeholder) stakeholders.push(_stakeholder);
+    }
+
+    /**
+     * @notice A method to remove a stakeholder.
+     * @param _stakeholderR The stakeholder to remove.
+     */
+    function removeStakeholder(address _stakeholderR)
+        public
+    {
+        (bool _isStakeholder, uint256 s) = isStakeholder(_stakeholderR);
+        if(_isStakeholder){
+            stakeholders[s] = stakeholders[stakeholders.length - 1];
+            stakeholders.pop();
+        } 
+    }
+
+    // ---------- STAKEHOLDERS ----------
+
+     /**
+     * @notice A method to check if an address is a stakeholder.
+     * @param _address The address to verify.
+     * @return bool, uint256 Whether the address is a stakeholder, 
+     * and if so its position in the stakeholders array.
+     */
+    function isStakeholder(address _address)
+        public
+        view
+        returns(bool, uint256)
+    {
+        for (uint256 s = 0; s < stakeholders.length; s += 1){
+            if (_address == stakeholders[s]) return (true, s);
+        }
+        return (false, 0);
+    }
+
+// withdrawReward - to withdraw reward
+      function withdrawReward(address to , uint256 reward) public   {
+        require(to == msg.sender, "You cannot claim reward");
+        if (reward > 0) {
+            BEP20Address.transfer(to, reward);
+             reward = 0;
+        }
+      }
+
+  }
