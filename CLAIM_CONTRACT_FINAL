@@ -1,0 +1,29 @@
+// SPDX-License-Identifier:GPL-3.0
+pragma solidity ^0.8.16;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "github.com/Prasoon180/superPAD_15Aug/blob/main/IBEP20.sol";
+
+contract claimContract is Ownable {
+    mapping(address => bool) public tokens;
+    // walletAddress => tokenAddress => limit
+    mapping(address => mapping(address => uint256)) public restrictions;
+    
+    function claim(address _BEP20Address) external {
+        require(tokens[_BEP20Address], "No such token!");
+        uint256 amount = restrictions[msg.sender][_BEP20Address];
+        require(amount > 0, "No claims available!");
+        
+        restrictions[msg.sender][_BEP20Address] = 0;
+        IBEP20 BEP20Address = IBEP20(_BEP20Address); 
+        BEP20Address.transfer(msg.sender, amount);
+    }
+
+    function setRestrictions(address[] memory _accounts, uint256[] memory _amounts, address _BEP20Address) external onlyOwner {
+        require(_accounts.length == _amounts.length, "Invalid data!");
+        tokens[_BEP20Address] = true;
+        for (uint256 i = 0; i < _accounts.length; i++) {
+            restrictions[_accounts[i]][_BEP20Address] = _amounts[i];
+        }
+    }
+}
